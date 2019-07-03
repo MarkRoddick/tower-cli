@@ -419,18 +419,18 @@ def get_assets_from_input(all=False, asset_input=None):
     return return_assets
 
 
-def extract_extra_credentials(asset):
+def extract_credentials(asset):
     return_credentials = []
     name_to_id_map = {}
 
-    extra_credentials = load_all_assets(asset['related']['extra_credentials'])
-    for a_credential in extra_credentials['results']:
+    credentials = load_all_assets(asset['related']['credentials'])
+    for a_credential in credentials['results']:
         name_to_id_map[a_credential['name']] = a_credential['id']
         return_credentials.append(a_credential['name'])
 
     return {'items': return_credentials, 'existing_name_to_id_map': name_to_id_map}
 
-
+    
 def extract_labels(asset):
     return_labels = []
     name_to_object_map = {}

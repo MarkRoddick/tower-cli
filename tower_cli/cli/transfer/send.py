@@ -284,8 +284,8 @@ class Sender(LoggingCommand):
                             self.import_inventory_groups(existing_object, relations[a_relation])
                         elif a_relation in common.NOTIFICATION_TYPES:
                             self.import_notification_relations(existing_object, relations[a_relation], a_relation)
-                        elif a_relation == 'extra_credentials':
-                            self.import_extra_credentials(existing_object, relations[a_relation])
+                        elif a_relation == 'credentials':
+                            self.import_credentials(existing_object, relations[a_relation])
                         elif a_relation == 'schedules':
                             self.import_schedules(existing_object, relations[a_relation], asset_type)
                         elif a_relation == 'roles':
@@ -483,14 +483,14 @@ class Sender(LoggingCommand):
                     # Someday we could go and try to resolve inventory projects or scripts
                     pass
 
-                elif relation == 'extra_credentials':
+                elif relation == 'credentials':
                     for credential in an_asset[common.ASSET_RELATION_KEY][relation]:
                         if 'credential' in self.sorted_assets and credential in self.sorted_assets['credential']:
                             continue
                         try:
                             tower_cli.get_resource('credential').get(**{'name': credential})
                         except TowerCLIError:
-                            self.log_error("Unable to resolve extra_credential {}".format(credential))
+                            self.log_error("Unable to resolve credential {}".format(credential))
                             post_check_succeeded = False
 
                 elif relation == 'schedules':
@@ -919,14 +919,14 @@ class Sender(LoggingCommand):
             del a_node['unified_job_type']
             del a_node['unified_job_name']
 
-    def import_extra_credentials(self, existing_object, new_creds):
+    def import_credentials(self, existing_object, new_creds):
         # Credentials are just an array of names
         # So importing these can be done very easily by comparing new_creds vs existing_creds
-        existing_creds_data = common.extract_extra_credentials(existing_object)
+        existing_creds_data = common.extract_credentials(existing_object)
         existing_creds = existing_creds_data['items']
         existing_name_to_id = existing_creds_data['existing_name_to_id_map']
         if existing_creds == new_creds:
-            self.log_ok("All extra creds are up to date")
+            self.log_ok("All creds are up to date")
             return
 
         # Creds to remove is the difference between new_creds and existing_creds
@@ -935,23 +935,23 @@ class Sender(LoggingCommand):
                 tower_cli.get_resource('job_template').disassociate_credential(
                     existing_object['id'], existing_name_to_id[cred]
                 )
-                self.log_change("Removed extra credential {}".format(cred))
+                self.log_change("Removed credential {}".format(cred))
             except TowerCLIError as e:
-                self.log_error("Unable to remove extra credential {} : {}".format(cred, e))
+                self.log_error("Unable to remove credential {} : {}".format(cred, e))
 
-        # Creds to add is the difference between existing_creds and extra_creds
+        # Creds to add is the difference between existing_creds and creds
         for cred in list(set(new_creds).difference(existing_creds)):
             try:
                 new_credential = tower_cli.get_resource('credential').get(**{'name': cred})
             except TowerCLIError as e:
-                self.log_error("Unable to resolve extra credential {} : {}".format(cred, e))
+                self.log_error("Unable to resolve credential {} : {}".format(cred, e))
                 continue
 
             try:
                 tower_cli.get_resource('job_template').associate_credential(existing_object['id'], new_credential['id'])
-                self.log_change("Added extra credential {}".format(cred))
+                self.log_change("Added credential {}".format(cred))
             except TowerCLIError as e:
-                self.log_error("Unable to add extra credential {} : ".format(cred, e))
+                self.log_error("Unable to add credential {} : ".format(cred, e))
 
     def import_labels(self, existing_object, new_labels, asset_type):
         existing_labels_data = common.extract_labels(existing_object)
