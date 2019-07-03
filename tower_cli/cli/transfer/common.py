@@ -430,7 +430,6 @@ def extract_credentials(asset):
 
     return {'items': return_credentials, 'existing_name_to_id_map': name_to_id_map}
 
-    
 def extract_labels(asset):
     return_labels = []
     name_to_object_map = {}
