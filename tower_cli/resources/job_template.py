@@ -142,7 +142,7 @@ class Resource(models.SurveyResource):
 
         =====API DOCS=====
         """
-        return self._assoc('extra_credentials', job_template, credential)
+        return self._assoc('credentials', job_template, credential)
 
     @resources.command(use_fields_as_options=False)
     @click.option('--job-template', type=types.Related('job_template'))
